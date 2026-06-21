@@ -33,6 +33,10 @@ return [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
+        'claude' => [
+    'api_key' => env('CLAUDE_API_KEY'),
+    'model'   => env('CLAUDE_MODEL', 'claude-sonnet-4-6'),
+],
     ],
 
 ];
