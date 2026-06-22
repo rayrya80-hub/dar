@@ -36,11 +36,16 @@ class JurnalPertemuanController extends Controller
         ]);
 
         JurnalPertemuan::create([
-            ...$request->all(),
-            'guru_wali_id' => Auth::id(),
+            'siswa_id'          => $request->siswa_id,
+            'guru_wali_id'      => Auth::id(),
+            'tanggal_pertemuan' => $request->tanggal_pertemuan,
+            'jenis_pertemuan'   => $request->jenis_pertemuan,
+            'aspek'             => $request->aspek,
+            'catatan'           => $request->catatan,
+            'tindak_lanjut'     => $request->tindak_lanjut,
         ]);
 
-        return redirect()->route('jurnal.index')
+        return redirect()->route('guru.jurnal.index')
             ->with('success', 'Jurnal pertemuan berhasil disimpan.');
     }
 
@@ -67,16 +72,23 @@ class JurnalPertemuanController extends Controller
             'tindak_lanjut'     => 'nullable|string',
         ]);
 
-        $jurnal->update($request->all());
+        $jurnal->update([
+            'siswa_id'          => $request->siswa_id,
+            'tanggal_pertemuan' => $request->tanggal_pertemuan,
+            'jenis_pertemuan'   => $request->jenis_pertemuan,
+            'aspek'             => $request->aspek,
+            'catatan'           => $request->catatan,
+            'tindak_lanjut'     => $request->tindak_lanjut,
+        ]);
 
-        return redirect()->route('jurnal.index')
+        return redirect()->route('guru.jurnal.index')
             ->with('success', 'Jurnal pertemuan berhasil diperbarui.');
     }
 
     public function destroy(JurnalPertemuan $jurnal)
     {
         $jurnal->delete();
-        return redirect()->route('jurnal.index')
+        return redirect()->route('guru.jurnal.index')
             ->with('success', 'Jurnal pertemuan berhasil dihapus.');
     }
 }

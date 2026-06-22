@@ -2,63 +2,93 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LaporanPerkembangan;
+use App\Models\Siswa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LaporanPerkembanganController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $laporan = LaporanPerkembangan::with('siswa')
+            ->where('guru_wali_id', Auth::id())
+            ->latest()
+            ->paginate(10);
+        return view('laporan.index', compact('laporan'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        $siswaList = Siswa::where('guru_wali_id', Auth::id())->get();
+        return view('laporan.create', compact('siswaList'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'siswa_id'     => 'required|exists:siswa,id',
+            'periode'      => 'required|in:semester_1,semester_2',
+            'tahun_ajaran' => 'required|digits:4',
+        ]);
+
+        LaporanPerkembangan::create([
+            'siswa_id'                  => $request->siswa_id,
+            'guru_wali_id'              => Auth::id(),
+            'periode'                   => $request->periode,
+            'tahun_ajaran'              => $request->tahun_ajaran,
+            'perkembangan_akademik'     => $request->perkembangan_akademik,
+            'perkembangan_karakter'     => $request->perkembangan_karakter,
+            'perkembangan_bakat'        => $request->perkembangan_bakat,
+            'perkembangan_keterampilan' => $request->perkembangan_keterampilan,
+            'kesimpulan'                => $request->kesimpulan,
+            'status'                    => $request->status ?? 'draft',
+        ]);
+
+        return redirect()->route('guru.laporan.index')
+            ->with('success', 'Laporan perkembangan berhasil disimpan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(LaporanPerkembangan $laporan)
     {
-        //
+        $laporan->load('siswa', 'guruWali');
+        return view('laporan.show', compact('laporan'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(LaporanPerkembangan $laporan)
     {
-        //
+        $siswaList = Siswa::where('guru_wali_id', Auth::id())->get();
+        return view('laporan.edit', compact('laporan', 'siswaList'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, LaporanPerkembangan $laporan)
     {
-        //
+        $request->validate([
+            'siswa_id'     => 'required|exists:siswa,id',
+            'periode'      => 'required|in:semester_1,semester_2',
+            'tahun_ajaran' => 'required|digits:4',
+        ]);
+
+        $laporan->update([
+            'siswa_id'                  => $request->siswa_id,
+            'periode'                   => $request->periode,
+            'tahun_ajaran'              => $request->tahun_ajaran,
+            'perkembangan_akademik'     => $request->perkembangan_akademik,
+            'perkembangan_karakter'     => $request->perkembangan_karakter,
+            'perkembangan_bakat'        => $request->perkembangan_bakat,
+            'perkembangan_keterampilan' => $request->perkembangan_keterampilan,
+            'kesimpulan'                => $request->kesimpulan,
+            'status'                    => $request->status ?? 'draft',
+        ]);
+
+        return redirect()->route('guru.laporan.index')
+            ->with('success', 'Laporan perkembangan berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(LaporanPerkembangan $laporan)
     {
-        //
+        $laporan->delete();
+        return redirect()->route('guru.laporan.index')
+            ->with('success', 'Laporan berhasil dihapus.');
     }
 }
